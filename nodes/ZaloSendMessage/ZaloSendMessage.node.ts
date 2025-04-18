@@ -76,10 +76,9 @@ export class ZaloSendMessage implements INodeType {
             throw new NodeOperationError(this.getNode(), 'No API instance found. Please make sure to provide valid credentials.')
         }
         this.logger.info(`API ${JSON.stringify(api)}`);
-        console.log('API', api);
 
         const threadId = this.getNodeParameter('threadId', 0) as string;
-        const type = ThreadType.User;//this.getNodeParameter('type', 0) as any;
+        const type = this.getNodeParameter('type', 0) as ThreadType;
         const message = this.getNodeParameter('message', 0) as string;
         const meta = {threadId, type, message};
         // Gửi tin nhắn một lần
