@@ -16,7 +16,7 @@ export class ZaloSendMessage implements INodeType {
 		name: 'zaloSendMessage',
 		icon: 'file:../shared/zalo.svg',
 		group: ['Zalo'],
-		version: 4,
+		version: 5,
 		description: 'Gửi tin nhắn qua API Zalo sử dụng kết nối đăng nhập bằng cookie',
 		defaults: {
 			name: 'Zalo Send Message',
@@ -168,6 +168,10 @@ export class ZaloSendMessage implements INodeType {
 									{
 										name: 'Image URL/File URL',
 										value: 'url',
+									},
+									{
+										name: 'Array of URLs',
+										value: 'urlArray',
 									}
 								],
 								default: 'url',
@@ -184,6 +188,18 @@ export class ZaloSendMessage implements INodeType {
 									},
 								},
 								description: 'URL công khai của ảnh hoặc file',
+							},
+							{
+								displayName: 'Image URLs Array',
+								name: 'imageUrls',
+								type: 'string',
+								default: '',
+								displayOptions: {
+									show: {
+										'type': ['urlArray'],
+									},
+								},
+								description: 'Array of URLs (JSON format) hoặc comma-separated URLs. VD: ["url1","url2"] hoặc url1,url2.',
 							}
 						],
 					},
@@ -264,13 +280,61 @@ export class ZaloSendMessage implements INodeType {
 				if (attachments && attachments.attachment && attachments.attachment.length > 0) {
 					messageContent.attachments = [];
 					for (const attachment of attachments.attachment) {
-						let fileData;
 						if (attachment.type === 'url') {
-							 fileData = await saveFile(attachment.imageUrl);
+							// Handle single URL or comma-separated URLs
+							let urls: string[] = [];
+							
+							if (typeof attachment.imageUrl === 'string') {
+								// Check if it contains commas (multiple URLs)
+								if (attachment.imageUrl.includes(',')) {
+									urls = attachment.imageUrl.split(',').map((url: string) => url.trim()).filter((url: string) => url);
+								} else {
+									urls = [attachment.imageUrl.trim()];
+								}
+							}
+							
+							// Process each URL
+							for (const url of urls) {
+								if (url) {
+									this.logger.info(`Processing URL: ${url}`);
+									const fileData = await saveFile(url);
+									if (fileData) {
+										messageContent.attachments.push(fileData);
+										this.logger.info(`Successfully downloaded: ${fileData}`);
+									} else {
+										this.logger.error(`Failed to download file from URL: ${url}`);
+									}
+								}
+							}
+						} else if (attachment.type === 'urlArray') {
+							// Array of URLs
+							let urls: string[] = [];
+							
+							// Parse URLs from string input
+							if (typeof attachment.imageUrls === 'string') {
+								try {
+									// Try to parse as JSON array first
+									urls = JSON.parse(attachment.imageUrls);
+								} catch {
+									// If not JSON, try comma-separated
+									urls = attachment.imageUrls.split(',').map((url: string) => url.trim()).filter((url: string) => url);
+								}
+							}
+							
+							// Process each URL
+							for (const url of urls) {
+								if (url) {
+									this.logger.info(`Processing URL: ${url}`);
+									const fileData = await saveFile(url);
+									if (fileData) {
+										messageContent.attachments.push(fileData);
+										this.logger.info(`Successfully downloaded: ${fileData}`);
+									} else {
+										this.logger.error(`Failed to download file from URL: ${url}`);
+									}
+								}
+							}
 						}
-						
-
-						messageContent.attachments.push(fileData);
 					}
 				}
 
@@ -287,9 +351,7 @@ export class ZaloSendMessage implements INodeType {
 						id : threadId,
 						type: type
 					}
-					const result = await api.sendTypingEvent(recipentObj.id, {
-						type: recipentObj.type
-					});
+					const result = await api.sendTypingEvent(recipentObj.id, recipentObj.type);
 					if (!!result) {
 						this.logger.info("Send! typing event")
 					}

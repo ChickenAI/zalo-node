@@ -10,3 +10,10 @@ output
 docs/node_modules
 # Ignore pnpm lock file
 pnpm-lock.yaml
+# Ignore development files
+dev/
+# Ignore Claude and documentation files
+CLAUDE.md
+CONTRIBUTING.md
+LICENSE
+assets/
