@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-zalo-tools",
-	"version": "0.5.10",
+	"version": "0.6.0",
 	"description": "Các node hỗ trợ Zalo cho n8n",
 	"keywords": [
 		"n8n-community-node-package",
@@ -40,7 +40,7 @@
 		"dist"
 	],
 	"n8n": {
-		"n8nNodesApiVersion": 1,
+		"n8nNodesApiVersion": 2,
 		"credentials": [
 			"dist/credentials/N8nZaloApi.credentials.js",
 			"dist/credentials/ZaloApi.credentials.js"
@@ -76,6 +76,6 @@
 	"dependencies": {
 		"axios": "^1.8.4",
 		"pnpm": "^10.6.5",
-		"zca-js": "^2.0.0-beta.24"
+		"zca-js": "^2.1.2"
 	}
 }

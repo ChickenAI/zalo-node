@@ -3,13 +3,13 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionType,
 	NodeOperationError,
 	IDataObject,
 } from 'n8n-workflow';
 import { zaloGroupOperations, zaloGroupFields } from './ZaloGroupDescription';
-import { API, Zalo } from 'zca-js';
-
-let api: API | undefined;
+import { Zalo } from 'zca-js';
+import { getImageMetadata } from '../utils/helper';
 
 export class ZaloGroup implements INodeType {
 	description: INodeTypeDescription = {
@@ -23,10 +23,8 @@ export class ZaloGroup implements INodeType {
 		defaults: {
 			name: 'Zalo Group',
 		},
-		// @ts-ignore
-		inputs: ['main'],
-		// @ts-ignore
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'zaloApi',
@@ -64,16 +62,19 @@ export class ZaloGroup implements INodeType {
 		const imeiFromCred = zaloCred.imei as string;
 		const userAgentFromCred = zaloCred.userAgent as string;
 
-		const cookie = cookieFromCred ?? items.find((x) => x.json.cookie)?.json.cookie as any;
-		const imei = imeiFromCred ?? items.find((x) => x.json.imei)?.json.imei as string;
-		const userAgent = userAgentFromCred ?? items.find((x) => x.json.userAgent)?.json.userAgent as string;
+		const cookie = cookieFromCred ?? (items.find((x) => x.json.cookie)?.json.cookie as any);
+		const imei = imeiFromCred ?? (items.find((x) => x.json.imei)?.json.imei as string);
+		const userAgent =
+			userAgentFromCred ?? (items.find((x) => x.json.userAgent)?.json.userAgent as string);
 
-		const zalo = new Zalo();
-		const _api = await zalo.login({ cookie, imei, userAgent });
-		api = _api;
+		const zalo = new Zalo({ imageMetadataGetter: getImageMetadata });
+		const api = await zalo.login({ cookie, imei, userAgent });
 
 		if (!api) {
-			throw new NodeOperationError(this.getNode(), 'No API instance found. Please make sure to provide valid credentials.');
+			throw new NodeOperationError(
+				this.getNode(),
+				'No API instance found. Please make sure to provide valid credentials.',
+			);
 		}
 
 		for (let i = 0; i < items.length; i++) {
@@ -120,11 +121,10 @@ export class ZaloGroup implements INodeType {
 						const response = await api.addGroupDeputy(groupId, userId);
 
 						returnData.push({
-							json: 
-                            {
-                                status: "Thành công",
+							json: {
+								status: 'Thành công',
 								response: response,
-                            },
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -155,11 +155,10 @@ export class ZaloGroup implements INodeType {
 						const response = await api.changeGroupAvatar(groupId, imageUrl);
 
 						returnData.push({
-							json: 
-                            {
-                                status: "Thành công",
+							json: {
+								status: 'Thành công',
 								response: response,
-                            },
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -187,12 +186,12 @@ export class ZaloGroup implements INodeType {
 						const limit = this.getNodeParameter('limit', i) as number;
 
 						const response = await api.getGroupInfo(groupId);
-                        const groupInfo = response.gridInfoMap[groupId];
+						const groupInfo = response.gridInfoMap[groupId];
 						const members = groupInfo.memberIds?.slice(0, limit) || [];
-                        const admins = groupInfo.adminIds || [];
-                        const currentMems = groupInfo.currentMems || [];
-                        const updateMems = groupInfo.updateMems || [];
-                        const totalMember = groupInfo.totalMember || 0;
+						const admins = groupInfo.adminIds || [];
+						const currentMems = groupInfo.currentMems || [];
+						const updateMems = groupInfo.updateMems || [];
+						const totalMember = groupInfo.totalMember || 0;
 
 						returnData.push({
 							json: { members, admins, currentMems, updateMems, totalMember } as IDataObject,
@@ -243,7 +242,7 @@ export class ZaloGroup implements INodeType {
 
 						returnData.push({
 							json: {
-								status: "Thành công",
+								status: 'Thành công',
 								response: response,
 							},
 							pairedItem: {
@@ -272,4 +271,4 @@ export class ZaloGroup implements INodeType {
 
 		return [returnData];
 	}
-} 
+}

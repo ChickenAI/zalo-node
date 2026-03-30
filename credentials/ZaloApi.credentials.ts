@@ -1,14 +1,10 @@
-import {
-	ICredentialType,
-	INodeProperties,
-	Icon,
-} from 'n8n-workflow';
+import { ICredentialType, INodeProperties, Icon } from 'n8n-workflow';
 
 export class ZaloApi implements ICredentialType {
 	name = 'zaloApi';
 	displayName = 'Zalo API';
 	documentationUrl = 'https://developers.zalo.me/docs';
-	
+
 	icon: Icon = 'file:shared/zalo.svg';
 
 	properties: INodeProperties[] = [
@@ -44,23 +40,5 @@ export class ZaloApi implements ICredentialType {
 			placeholder: 'http(s)://user:pass@host:port',
 			description: 'HTTP proxy to use for Zalo API requests',
 		},
-		{
-			displayName: 'Support Code',
-			name: 'supportCode',
-			type: 'string',
-			default: '',
-			description: 'Support code for Zalo API',
-		},
-		{
-			displayName: 'License Key',
-			name: 'licenseKey',
-			type: 'string',
-			default: '',
-			description: 'License key for Zalo API',
-			typeOptions: {
-				password: true,
-			},
-		},
 	];
-
 }

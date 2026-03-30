@@ -3,12 +3,14 @@ import {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
+	NodeConnectionType,
 	NodeOperationError,
-	IHookFunctions
+	IHookFunctions,
 } from 'n8n-workflow';
 import { API, Zalo, FriendEventType, FriendEvent } from 'zca-js';
+import { getImageMetadata } from '../utils/helper';
 
-let api: API | undefined;
+let triggerApi: API | undefined;
 let reconnectTimer: NodeJS.Timeout | undefined;
 
 export class ZaloFriendTrigger implements INodeType {
@@ -22,10 +24,8 @@ export class ZaloFriendTrigger implements INodeType {
 		defaults: {
 			name: 'Zalo Friend Trigger',
 		},
-		// @ts-ignore
 		inputs: [],
-		// @ts-ignore
-		outputs: ['main'],
+		outputs: [NodeConnectionType.Main],
 		webhooks: [
 			{
 				name: 'default',
@@ -51,7 +51,7 @@ export class ZaloFriendTrigger implements INodeType {
 						name: 'Friend Requests',
 						value: FriendEventType.REQUEST,
 						description: 'Nghe sự kiện yêu cầu kết bạn',
-					}
+					},
 				],
 				default: [FriendEventType.REQUEST],
 				required: true,
@@ -79,38 +79,40 @@ export class ZaloFriendTrigger implements INodeType {
 					const imeiFromCred = credentials.imei as string;
 					const userAgentFromCred = credentials.userAgent as string;
 
-					const zalo = new Zalo();
-					api = await zalo.login({ cookie: cookieFromCred, imei: imeiFromCred, userAgent: userAgentFromCred });
+					const zalo = new Zalo({ imageMetadataGetter: getImageMetadata });
+					triggerApi = await zalo.login({
+						cookie: cookieFromCred,
+						imei: imeiFromCred,
+						userAgent: userAgentFromCred,
+					});
 
-					if (!api) {
+					if (!triggerApi) {
 						throw new NodeOperationError(
 							this.getNode(),
 							'No API instance found. Please make sure to provide valid credentials.',
 						);
 					}
 					const webhookUrl = this.getNodeWebhookUrl('default') as string;
-					console.log(webhookUrl);
-
 
 					// Add message event listener
-					api.listener.on('friend_event', async (event: FriendEvent) => {
+					triggerApi.listener.on('friend_event', async (event: FriendEvent) => {
 						const nodeEventTypes = this.getNodeParameter('eventTypes', 0) as FriendEventType[];
-						if(nodeEventTypes.includes(event.type)) {
+						if (nodeEventTypes.includes(event.type)) {
 							this.helpers.httpRequest({
-									method: 'POST',
-									url: webhookUrl,
-									body: {
-										friendEvent: event.data,
-									},
-									headers: {
-											'Content-Type': 'application/json',
-									},
+								method: 'POST',
+								url: webhookUrl,
+								body: {
+									friendEvent: event.data,
+								},
+								headers: {
+									'Content-Type': 'application/json',
+								},
 							});
 						}
 					});
 
 					// Start listening
-					api.listener.start();
+					triggerApi.listener.start();
 
 					const webhookData = this.getWorkflowStaticData('node');
 					webhookData.isConnected = true;
@@ -125,9 +127,9 @@ export class ZaloFriendTrigger implements INodeType {
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
 
-				if (api) {
-					api.listener.stop();
-					api = undefined;
+				if (triggerApi) {
+					triggerApi.listener.stop();
+					triggerApi = undefined;
 				}
 
 				if (reconnectTimer) {
@@ -144,8 +146,6 @@ export class ZaloFriendTrigger implements INodeType {
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const req = this.getRequestObject();
-		const body = req.body;
-		console.log(body);
 
 		return {
 			workflowData: [this.helpers.returnJsonArray(req.body)],

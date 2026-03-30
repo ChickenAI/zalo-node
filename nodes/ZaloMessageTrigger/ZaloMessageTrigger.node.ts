@@ -3,13 +3,14 @@ import {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
+	NodeConnectionType,
 	NodeOperationError,
 	IHookFunctions,
-	IDataObject,
 } from 'n8n-workflow';
 import { API, Zalo, ThreadType } from 'zca-js';
+import { getImageMetadata } from '../utils/helper';
 
-let api: API | undefined;
+let triggerApi: API | undefined;
 let reconnectTimer: NodeJS.Timeout | undefined;
 
 export class ZaloMessageTrigger implements INodeType {
@@ -23,10 +24,8 @@ export class ZaloMessageTrigger implements INodeType {
 		defaults: {
 			name: 'Zalo Message Trigger',
 		},
-		// @ts-ignore
 		inputs: [],
-		// @ts-ignore
-		outputs: ['main'],
+		outputs: [NodeConnectionType.Main],
 		webhooks: [
 			{
 				name: 'default',
@@ -94,40 +93,43 @@ export class ZaloMessageTrigger implements INodeType {
 					const userAgentFromCred = credentials.userAgent as string;
 
 					const selfListen = this.getNodeParameter('selfListen', 0) as boolean;
-					const zalo = new Zalo({ selfListen });
-					api = await zalo.login({ cookie: cookieFromCred, imei: imeiFromCred, userAgent: userAgentFromCred });
+					const zalo = new Zalo({ selfListen, imageMetadataGetter: getImageMetadata });
+					triggerApi = await zalo.login({
+						cookie: cookieFromCred,
+						imei: imeiFromCred,
+						userAgent: userAgentFromCred,
+					});
 
-					if (!api) {
+					if (!triggerApi) {
 						throw new NodeOperationError(
 							this.getNode(),
 							'No API instance found. Please make sure to provide valid credentials.',
 						);
 					}
-                    const webhookUrl = this.getNodeWebhookUrl('default') as string;
-                    console.log(webhookUrl);
+					const webhookUrl = this.getNodeWebhookUrl('default') as string;
 					// Add message event listener
-					api.listener.on('message', async (message) => {
+					triggerApi.listener.on('message', async (message) => {
 						const webhookData = this.getWorkflowStaticData('node');
 						// const eventTypes = webhookData.eventTypes as ThreadType[];
-                        this.helpers.httpRequest({
-                            method: 'POST',
-                            url: webhookUrl,
-                            body: {
-                                message: message,
-                            },
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        });
+						this.helpers.httpRequest({
+							method: 'POST',
+							url: webhookUrl,
+							body: {
+								message: message,
+							},
+							headers: {
+								'Content-Type': 'application/json',
+							},
+						});
 						// if (eventTypes.includes(message.type)) {
-                        //     console.log(message);
-							// Store message in static data to be processed by webhook method
+						//     console.log(message);
+						// Store message in static data to be processed by webhook method
 						webhookData.lastMessage = message;
 						// }
 					});
 
 					// Start listening
-					api.listener.start();
+					triggerApi.listener.start();
 
 					const webhookData = this.getWorkflowStaticData('node');
 					webhookData.isConnected = true;
@@ -142,9 +144,9 @@ export class ZaloMessageTrigger implements INodeType {
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const webhookData = this.getWorkflowStaticData('node');
 
-				if (api) {
-					api.listener.stop();
-					api = undefined;
+				if (triggerApi) {
+					triggerApi.listener.stop();
+					triggerApi = undefined;
 				}
 
 				if (reconnectTimer) {
@@ -161,17 +163,11 @@ export class ZaloMessageTrigger implements INodeType {
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-        const req = this.getRequestObject();
-        const body = req.body;
-        console.log(body);
+		const req = this.getRequestObject();
 		const webhookData = this.getWorkflowStaticData('node');
-		const message = webhookData.lastMessage as IDataObject;
-        console.log(message);
-
 
 		// Clear the message after processing
 		delete webhookData.lastMessage;
-
 
 		return {
 			workflowData: [this.helpers.returnJsonArray(req.body)],

@@ -3,12 +3,12 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
 import { zaloUserOperations, zaloUserFields } from './ZaloUserDescription';
-import { API, ThreadType, Zalo } from 'zca-js';
-
-let api: API | undefined;
+import { ThreadType, Zalo } from 'zca-js';
+import { getImageMetadata } from '../utils/helper';
 
 export class ZaloUser implements INodeType {
 	description: INodeTypeDescription = {
@@ -22,10 +22,8 @@ export class ZaloUser implements INodeType {
 		defaults: {
 			name: 'Zalo User',
 		},
-		// @ts-ignore
-		inputs: ['main'],
-		// @ts-ignore
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'zaloApi',
@@ -63,16 +61,19 @@ export class ZaloUser implements INodeType {
 		const imeiFromCred = zaloCred.imei as string;
 		const userAgentFromCred = zaloCred.userAgent as string;
 
-		const cookie = cookieFromCred ?? items.find((x) => x.json.cookie)?.json.cookie as any;
-		const imei = imeiFromCred ?? items.find((x) => x.json.imei)?.json.imei as string;
-		const userAgent = userAgentFromCred ?? items.find((x) => x.json.userAgent)?.json.userAgent as string;
+		const cookie = cookieFromCred ?? (items.find((x) => x.json.cookie)?.json.cookie as any);
+		const imei = imeiFromCred ?? (items.find((x) => x.json.imei)?.json.imei as string);
+		const userAgent =
+			userAgentFromCred ?? (items.find((x) => x.json.userAgent)?.json.userAgent as string);
 
-		const zalo = new Zalo();
-		const _api = await zalo.login({ cookie, imei, userAgent });
-		api = _api;
+		const zalo = new Zalo({ imageMetadataGetter: getImageMetadata });
+		const api = await zalo.login({ cookie, imei, userAgent });
 
 		if (!api) {
-			throw new NodeOperationError(this.getNode(), 'No API instance found. Please make sure to provide valid credentials.');
+			throw new NodeOperationError(
+				this.getNode(),
+				'No API instance found. Please make sure to provide valid credentials.',
+			);
 		}
 
 		for (let i = 0; i < items.length; i++) {
@@ -86,9 +87,9 @@ export class ZaloUser implements INodeType {
 
 						returnData.push({
 							json: {
-                                status: "Thành công",
-                                response: response,
-                            },
+								status: 'Thành công',
+								response: response,
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -104,9 +105,9 @@ export class ZaloUser implements INodeType {
 
 						returnData.push({
 							json: {
-                                status: "Thành công",
-                                response: response,
-                            },
+								status: 'Thành công',
+								response: response,
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -121,9 +122,9 @@ export class ZaloUser implements INodeType {
 
 						returnData.push({
 							json: {
-                                status: "Thành công",
-                                response: response,
-                            },
+								status: 'Thành công',
+								response: response,
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -138,9 +139,9 @@ export class ZaloUser implements INodeType {
 
 						returnData.push({
 							json: {
-                                status: "Thành công",
-                                response: response,
-                            },
+								status: 'Thành công',
+								response: response,
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -156,9 +157,9 @@ export class ZaloUser implements INodeType {
 
 					// 	returnData.push({
 					// 		json: {
-                    //             status: "Thành công",
-                    //             response: response,
-                    //         },
+					//             status: "Thành công",
+					//             response: response,
+					//         },
 					// 		pairedItem: {
 					// 			item: i,
 					// 		},
@@ -168,16 +169,22 @@ export class ZaloUser implements INodeType {
 					// Thay đổi cài đặt tài khoản
 					else if (operation === 'changeAccountSetting') {
 						const name = this.getNodeParameter('name', i) as string;
-						const dob = this.getNodeParameter('dob', i) as any;
+						const dob = this.getNodeParameter('dob', i) as string;
 						const gender = this.getNodeParameter('gender', i) as number;
 
-						const response = await api.updateProfile(name, dob, gender);
+						const response = await api.updateProfile({
+							profile: {
+								name,
+								dob: dob as `${string}-${string}-${string}`,
+								gender,
+							},
+						});
 
 						returnData.push({
 							json: {
-                                status: "Thành công",
-                                response: response,
-                            },
+								status: 'Thành công',
+								response: response,
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -207,8 +214,8 @@ export class ZaloUser implements INodeType {
 
 						returnData.push({
 							json: {
-                                friends: friends,
-                            },
+								friends: friends,
+							},
 							pairedItem: {
 								item: i,
 							},
@@ -238,7 +245,7 @@ export class ZaloUser implements INodeType {
 
 						returnData.push({
 							json: {
-								status: "Thành công",
+								status: 'Thành công',
 								response: response,
 							},
 							pairedItem: {
@@ -256,14 +263,14 @@ export class ZaloUser implements INodeType {
 
 						const UndoOptions = {
 							msgId: msgId,
-							cliMsgId: cliMsgId
-						}
+							cliMsgId: cliMsgId,
+						};
 
 						const response = await api.undo(UndoOptions, threadId, type);
 
 						returnData.push({
 							json: {
-								status: "Thành công",
+								status: 'Thành công',
 								response: response,
 							},
 							pairedItem: {

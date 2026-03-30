@@ -2,6 +2,27 @@ import axios from 'axios';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import type { ImageMetadataGetterResponse } from 'zca-js/dist/context';
+
+/**
+ * Image metadata getter for zca-js v2.
+ * Uses sharp if available (optional dependency), otherwise returns null.
+ */
+export async function getImageMetadata(filePath: string): Promise<ImageMetadataGetterResponse> {
+	try {
+		const sharp = require('sharp');
+		const metadata = await sharp(filePath).metadata();
+		const stats = fs.statSync(filePath);
+		return {
+			width: metadata.width || 0,
+			height: metadata.height || 0,
+			size: stats.size,
+		};
+	} catch (_error) {
+		// sharp not available or error reading image — return null
+		return null;
+	}
+}
 
 /**
  * Tải file bất kỳ (ảnh, pdf, zip...) và lưu vào thư mục tạm trong n8n

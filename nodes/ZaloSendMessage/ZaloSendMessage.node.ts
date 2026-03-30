@@ -3,12 +3,11 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
-	NodeOperationError
+	NodeConnectionType,
+	NodeOperationError,
 } from 'n8n-workflow';
 import { API, ThreadType, Zalo } from 'zca-js';
-import { saveFile, removeFile } from '../utils/helper';
-
-let api: API | undefined;
+import { saveFile, removeFile, getImageMetadata } from '../utils/helper';
 
 export class ZaloSendMessage implements INodeType {
 	description: INodeTypeDescription = {
@@ -21,10 +20,8 @@ export class ZaloSendMessage implements INodeType {
 		defaults: {
 			name: 'Zalo Send Message',
 		},
-		// @ts-ignore
-		inputs: ['main'],
-		// @ts-ignore
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'zaloApi',
@@ -168,7 +165,7 @@ export class ZaloSendMessage implements INodeType {
 									{
 										name: 'Image URL/File URL',
 										value: 'url',
-									}
+									},
 								],
 								default: 'url',
 								description: 'Loại file đính kèm',
@@ -180,11 +177,11 @@ export class ZaloSendMessage implements INodeType {
 								default: '',
 								displayOptions: {
 									show: {
-										'type': ['url'],
+										type: ['url'],
 									},
 								},
 								description: 'URL công khai của ảnh hoặc file',
-							}
+							},
 						],
 					},
 				],
@@ -192,7 +189,6 @@ export class ZaloSendMessage implements INodeType {
 			},
 		],
 	};
-
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const returnData: INodeExecutionData[] = [];
@@ -205,16 +201,20 @@ export class ZaloSendMessage implements INodeType {
 		const userAgentFromCred = zaloCred.userAgent as string;
 
 		// Initialize Zalo API
+		let api: API;
 		try {
-			const zalo = new Zalo();
-			api = await zalo.login({ 
+			const zalo = new Zalo({ imageMetadataGetter: getImageMetadata });
+			api = await zalo.login({
 				cookie: cookieFromCred,
-				imei: imeiFromCred, 
-				userAgent: userAgentFromCred 
+				imei: imeiFromCred,
+				userAgent: userAgentFromCred,
 			});
-			
+
 			if (!api) {
-				throw new NodeOperationError(this.getNode(), 'Failed to initialize Zalo API. Check your credentials.');
+				throw new NodeOperationError(
+					this.getNode(),
+					'Failed to initialize Zalo API. Check your credentials.',
+				);
 			}
 		} catch (error) {
 			throw new NodeOperationError(this.getNode(), `Zalo login error: ${(error as Error).message}`);
@@ -253,11 +253,13 @@ export class ZaloSendMessage implements INodeType {
 
 				// Add mentions if specified
 				if (mentions && Object.keys(mentions).length > 0) {
-					messageContent.mentions = [{
-						pos: mentions.pos || 0,
-						uid: mentions.uid,
-						len: mentions.len || 0,
-					}];
+					messageContent.mentions = [
+						{
+							pos: mentions.pos || 0,
+							uid: mentions.uid,
+							len: mentions.len || 0,
+						},
+					];
 				}
 
 				// Add attachments if specified
@@ -266,9 +268,8 @@ export class ZaloSendMessage implements INodeType {
 					for (const attachment of attachments.attachment) {
 						let fileData;
 						if (attachment.type === 'url') {
-							 fileData = await saveFile(attachment.imageUrl);
+							fileData = await saveFile(attachment.imageUrl);
 						}
-						
 
 						messageContent.attachments.push(fileData);
 					}
@@ -283,34 +284,26 @@ export class ZaloSendMessage implements INodeType {
 
 				//Send typing event
 				try {
-					const recipentObj = {
-						id : threadId,
-						type: type
-					}
-					const result = await api.sendTypingEvent(recipentObj.id, {
-						type: recipentObj.type
-					});
+					const result = await api.sendTypingEvent(threadId, type);
 					if (!!result) {
-						this.logger.info("Send! typing event")
+						this.logger.info('Send! typing event');
 					}
+				} catch (e) {
+					this.logger.error('Cannot send typing event');
 				}
-				catch (e) {
-					this.logger.error("Cannot send typing event")
-				}
-				
+
 				// Send message
 				const response = await api.sendMessage(messageContent, threadId, type);
 
 				//Remove temp img
-				if (messageContent.attachments && messageContent.attachments.length > 0){
+				if (messageContent.attachments && messageContent.attachments.length > 0) {
 					for (const attachment of messageContent.attachments) {
 						this.logger.info(`Remove attachment: ${attachment}`);
 
-						removeFile(attachment)
+						removeFile(attachment);
 					}
 				}
 				this.logger.info('Message sent successfully', { threadId, type });
-
 
 				returnData.push({
 					json: {
@@ -321,10 +314,9 @@ export class ZaloSendMessage implements INodeType {
 						messageContent,
 					},
 				});
-				
 			} catch (error) {
 				this.logger.error('Error sending Zalo message:', error);
-				
+
 				if (this.continueOnFail()) {
 					returnData.push({
 						json: {
