@@ -66,9 +66,6 @@
 		"prettier": "^3.3.2",
 		"typescript": "^5.5.3"
 	},
-	"optionalDependencies": {
-		"sharp": "^0.32.1"
-	},
 	"peerDependencies": {
 		"n8n-core": ">=1.0.0",
 		"n8n-workflow": ">=1.0.0"
@@ -76,6 +73,7 @@
 	"dependencies": {
 		"axios": "^1.8.4",
 		"pnpm": "^10.6.5",
+		"sharp": "^0.32.6",
 		"zca-js": "^2.1.2"
 	}
 }
