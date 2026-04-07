@@ -20,13 +20,12 @@ importers:
       pnpm:
         specifier: ^10.6.5
         version: 10.8.1
-      zca-js:
-        specifier: ^2.0.0-beta.24
-        version: 2.1.2
-    optionalDependencies:
       sharp:
-        specifier: ^0.32.1
+        specifier: ^0.32.6
         version: 0.32.6
+      zca-js:
+        specifier: ^2.1.2
+        version: 2.1.2
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^7.15.0
@@ -6011,8 +6010,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  b4a@1.8.0:
-    optional: true
+  b4a@1.8.0: {}
 
   bach@1.2.0:
     dependencies:
@@ -6028,8 +6026,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  bare-events@2.8.2:
-    optional: true
+  bare-events@2.8.2: {}
 
   bare-fs@4.5.6:
     dependencies:
@@ -6041,15 +6038,12 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
-  bare-os@3.8.4:
-    optional: true
+  bare-os@3.8.4: {}
 
   bare-path@3.0.0:
     dependencies:
       bare-os: 3.8.4
-    optional: true
 
   bare-stream@2.11.0(bare-events@2.8.2):
     dependencies:
@@ -6059,12 +6053,10 @@ snapshots:
       bare-events: 2.8.2
     transitivePeerDependencies:
       - react-native-b4a
-    optional: true
 
   bare-url@2.4.0:
     dependencies:
       bare-path: 3.0.0
-    optional: true
 
   base-64@1.0.0: {}
 
@@ -6108,7 +6100,6 @@ snapshots:
       buffer: 5.7.1
       inherits: 2.0.4
       readable-stream: 3.6.2
-    optional: true
 
   bl@5.1.0:
     dependencies:
@@ -6315,8 +6306,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  chownr@1.1.4:
-    optional: true
+  chownr@1.1.4: {}
 
   class-utils@0.3.6:
     dependencies:
@@ -6390,7 +6380,6 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
       color-string: 1.9.1
-    optional: true
 
   colorspace@1.1.4:
     dependencies:
@@ -6543,7 +6532,6 @@ snapshots:
   decompress-response@6.0.0:
     dependencies:
       mimic-response: 3.1.0
-    optional: true
 
   deep-equal@2.2.0:
     dependencies:
@@ -6586,8 +6574,7 @@ snapshots:
       which-collection: 1.0.2
       which-typed-array: 1.1.19
 
-  deep-extend@0.6.0:
-    optional: true
+  deep-extend@0.6.0: {}
 
   deep-is@0.1.4: {}
 
@@ -6634,8 +6621,7 @@ snapshots:
 
   detect-file@1.0.0: {}
 
-  detect-libc@2.0.3:
-    optional: true
+  detect-libc@2.0.3: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -6976,7 +6962,6 @@ snapshots:
       bare-events: 2.8.2
     transitivePeerDependencies:
       - bare-abort-controller
-    optional: true
 
   events@3.3.0: {}
 
@@ -6994,8 +6979,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  expand-template@2.0.3:
-    optional: true
+  expand-template@2.0.3: {}
 
   expand-tilde@2.0.2:
     dependencies:
@@ -7038,8 +7022,7 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
-  fast-fifo@1.3.2:
-    optional: true
+  fast-fifo@1.3.2: {}
 
   fast-glob@3.3.3:
     dependencies:
@@ -7207,8 +7190,7 @@ snapshots:
     dependencies:
       map-cache: 0.2.2
 
-  fs-constants@1.0.0:
-    optional: true
+  fs-constants@1.0.0: {}
 
   fs-mkdirp-stream@1.0.0:
     dependencies:
@@ -7297,8 +7279,7 @@ snapshots:
 
   get-value@2.0.6: {}
 
-  github-from-package@0.0.0:
-    optional: true
+  github-from-package@0.0.0: {}
 
   glob-parent@3.1.0:
     dependencies:
@@ -8180,8 +8161,7 @@ snapshots:
 
   mime@3.0.0: {}
 
-  mimic-response@3.1.0:
-    optional: true
+  mimic-response@3.1.0: {}
 
   minifaker@1.34.1:
     dependencies:
@@ -8212,8 +8192,7 @@ snapshots:
       for-in: 1.0.2
       is-extendable: 1.0.1
 
-  mkdirp-classic@0.5.3:
-    optional: true
+  mkdirp-classic@0.5.3: {}
 
   mkdirp@1.0.4: {}
 
@@ -8472,8 +8451,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  napi-build-utils@2.0.0:
-    optional: true
+  napi-build-utils@2.0.0: {}
 
   native-duplexpair@1.0.0: {}
 
@@ -8489,12 +8467,10 @@ snapshots:
   node-abi@3.89.0:
     dependencies:
       semver: 7.7.1
-    optional: true
 
   node-abort-controller@3.1.1: {}
 
-  node-addon-api@6.1.0:
-    optional: true
+  node-addon-api@6.1.0: {}
 
   node-fetch@2.7.0:
     dependencies:
@@ -8875,7 +8851,6 @@ snapshots:
       simple-get: 4.0.1
       tar-fs: 2.1.4
       tunnel-agent: 0.6.0
-    optional: true
 
   prelude-ls@1.2.1: {}
 
@@ -8921,7 +8896,6 @@ snapshots:
     dependencies:
       end-of-stream: 1.4.4
       once: 1.4.0
-    optional: true
 
   pumpify@1.5.1:
     dependencies:
@@ -8965,7 +8939,6 @@ snapshots:
       ini: 1.3.8
       minimist: 1.2.8
       strip-json-comments: 2.0.1
-    optional: true
 
   read-pkg-up@1.0.1:
     dependencies:
@@ -9292,7 +9265,6 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
@@ -9338,15 +9310,13 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-concat@1.0.1:
-    optional: true
+  simple-concat@1.0.1: {}
 
   simple-get@4.0.1:
     dependencies:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
-    optional: true
 
   simple-git@3.27.0:
     dependencies:
@@ -9535,7 +9505,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
   strict-event-emitter-types@2.0.0: {}
 
@@ -9606,8 +9575,7 @@ snapshots:
     dependencies:
       is-utf8: 0.2.1
 
-  strip-json-comments@2.0.1:
-    optional: true
+  strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
 
@@ -9645,7 +9613,6 @@ snapshots:
       mkdirp-classic: 0.5.3
       pump: 3.0.4
       tar-stream: 2.2.0
-    optional: true
 
   tar-fs@3.1.2:
     dependencies:
@@ -9658,7 +9625,6 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
-    optional: true
 
   tar-stream@2.2.0:
     dependencies:
@@ -9667,7 +9633,6 @@ snapshots:
       fs-constants: 1.0.0
       inherits: 2.0.4
       readable-stream: 3.6.2
-    optional: true
 
   tar-stream@3.1.8:
     dependencies:
@@ -9679,7 +9644,6 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
-    optional: true
 
   tarn@3.0.2: {}
 
@@ -9718,14 +9682,12 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-    optional: true
 
   text-decoder@1.2.7:
     dependencies:
       b4a: 1.8.0
     transitivePeerDependencies:
       - react-native-b4a
-    optional: true
 
   text-hex@1.0.0: {}
 
@@ -9828,7 +9790,6 @@ snapshots:
   tunnel-agent@0.6.0:
     dependencies:
       safe-buffer: 5.2.1
-    optional: true
 
   tunnel@0.0.6: {}
 
